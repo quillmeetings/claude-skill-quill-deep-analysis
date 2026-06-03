@@ -1,6 +1,6 @@
 {
   "name": "quill-deep-analysis",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Deep map/reduce research over your Quill meeting corpus. Shards a long time range across parallel sub-agents, consolidates per dimension, and writes a fact-first analytical report with a dated timeline and drill-down sub-reports. For long-span, multi-meeting questions — strategy reviews, performance reviews, 'how did our thinking evolve' — not single-meeting lookups.",
   "author": { "name": "Quill Meetings", "email": "m@quillmeetings.com" },
   "homepage": "https://github.com/quillmeetings/claude-skill-quill-deep-analysis",
