@@ -98,11 +98,10 @@ The engine sets the per-stage models itself (see **Model strategy**); you don't 
 - `windows` — `[{ start, end, label }]` ISO date-times, pre-sharded.
 - `participantsHint` — names usually present (e.g. `["Jordan"]`); given as context, not a hard filter.
 - `outDir` — the run folder. **Default: use `./research/<topic>-<date>/`, creating `./research/` in the project if it doesn't exist yet** — unless the user has specified another location, in which case use that.
-- `recursion` — **choose by the question's complexity:**
-  - Simple/narrow question → `{ rounds: 0 }` (stop after synthesis; no follow-up pass).
-  - Substantial/multi-faceted question → `{ rounds: 1, topK: 4 }` (one targeted round on the sharpest generated questions).
-  - Very broad/open-ended research → raise `rounds` (each round re-researches the still-open questions).
-  When unsure, default to `{ rounds: 1, topK: 4 }`.
+- `recursion` — `{ rounds, topK }`, an **enable-switch + cap, not a loop count**. `{ rounds: 0 }` disables the follow-up pass; `{ rounds: 1, topK: 4 }` *allows* **at most one** round. The engine then runs a cautious in-workflow **gate** (an "evaluate and decide" step) that skips the round unless a follow-up would *materially* change the answer — so even `rounds: 1` often does nothing, by design.
+  - Simple/narrow question → `{ rounds: 0 }`.
+  - Substantial question → `{ rounds: 1, topK: 4 }` (the gate still decides whether to spend it).
+  - **Be cautious about going above 1.** Each round spawns one transcript-reading agent per question, so it directly multiplies cost and rarely pays off. Default to `1` and let the gate prevent wasted rounds; only exceed it for genuinely sprawling research, deliberately.
 - `models` *(optional)* — per-agent model overrides; defaults to `{ map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'opus' }`. See **Model strategy** above.
 
 After it returns:
