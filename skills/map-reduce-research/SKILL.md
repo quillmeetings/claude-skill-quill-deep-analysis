@@ -77,13 +77,22 @@ The engine's agent prompts already encode this; it's restated here for anyone ex
 
 ## How to run it
 
-The engine ships with this plugin at `workflows/map-reduce-research.mjs`. Pre-compute windows + paths in the main thread, `mkdir -p` the tree, copy this skill's `assets/report-viewer.html` into `outDir` (for the styled reader, below), then run the engine with the Workflow tool by **scriptPath** — point it at the plugin's copy (`${CLAUDE_PLUGIN_ROOT}/workflows/map-reduce-research.mjs` where available; otherwise copy that file into your project's `.claude/workflows/` and invoke it by name):
+The engine ships with this plugin at `workflows/map-reduce-research.mjs`. **Always run the map/reduce through this engine via the Workflow tool — never perform the map/reduce yourself in the main thread.** Running the engine is what applies the model tiering (Opus on the reduce + synthesize steps — the biggest quality lever); doing it inline silently runs everything on the session model.
+
+Steps:
+1. **Locate the engine.** Use `${CLAUDE_PLUGIN_ROOT}/workflows/map-reduce-research.mjs`. If that variable isn't resolved in your context, find the installed copy (e.g. `ls ~/.claude/plugins/**/workflows/map-reduce-research.mjs`) or copy that file into the project's `.claude/workflows/`. Pass the resolved absolute path below.
+2. Pre-compute windows + paths, `mkdir -p` the output tree, and copy this skill's `assets/report-viewer.html` into `outDir`.
+3. Run the engine:
 
 ```
-Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/map-reduce-research.mjs", args: {
-  question, dimensions, windows, participantsHint, outDir, recursion: { rounds, topK }
+Workflow({ scriptPath: "<absolute path to map-reduce-research.mjs>", args: {
+  question, dimensions, windows, participantsHint, outDir,
+  recursion: { rounds, topK },
+  models: { map: "sonnet", reduce: "opus", synthesize: "opus", recurse: "sonnet", finalize: "sonnet" }
 }})
 ```
+
+Synthesis and reduce run on **Opus** — that is deliberate and the main quality lever. Pass the `models` block as shown and do not downgrade them. If you cannot run the engine, stop and say so rather than doing the map/reduce on the session model.
 
 `args` shape:
 - `question` — the top-level question (string).
@@ -94,7 +103,15 @@ Workflow({ scriptPath: "${CLAUDE_PLUGIN_ROOT}/workflows/map-reduce-research.mjs"
 - `recursion` — `{ rounds: 1, topK: 4 }` to do one follow-up round on the top 4 generated questions; `{ rounds: 0 }` to stop after synthesis.
 - `models` *(optional)* — per-agent model overrides; defaults to `{ map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'sonnet' }`. See **Model strategy** above.
 
-After it returns, read `00-SUMMARY.md`; the generated follow-up questions live in `_next-questions.md`.
+After it returns:
+
+1. **Open the report for the user automatically — do not wait to be asked.** Serve the run folder and open the top-level report in their browser:
+   ```
+   ( python3 -m http.server <port> --directory <outDir> >/tmp/qda-report.log 2>&1 & )
+   open "http://localhost:<port>/report-viewer.html?doc=00-SUMMARY.md"   # macOS; use xdg-open on Linux
+   ```
+   Pick an unused port, and always also print the URL in case the browser didn't pop.
+2. Read `00-SUMMARY.md` yourself and give the user the headline. The generated follow-up questions live in `_next-questions.md`.
 
 ## Reading the report (HTML viewer)
 
