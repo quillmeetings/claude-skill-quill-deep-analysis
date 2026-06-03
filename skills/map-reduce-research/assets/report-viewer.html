@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Report</title>
+<style>
+  /* Palette from Quill's design tokens (quill/app/tailwind.config.js): sienna brand, charcoal dark, Lato/Aleo type. */
+  :root {
+    --maxw: 50rem;
+    --bg: #fcfcfc; --fg: #101010; --muted: #5f5e5d; --rule: #e4e3e1;
+    --link: #b1652f; --accent: #b1652f; --code-bg: #f3f3f2; --quote-bg: #f6eee8;
+    --table-head: #f6f6f5; --shadow: 0 1px 3px rgba(16,16,16,.06);
+    --serif: 'Aleo', ui-serif, Georgia, "Times New Roman", serif;
+    --sans: 'Lato', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: Menlo, Consolas, "Liberation Mono", ui-monospace, monospace;
+  }
+  html[data-theme="dark"] {
+    --bg: #171615; --fg: #f3f2f2; --muted: #aba5a1; --rule: #433f3c;
+    --link: #d4aa8c; --accent: #d4aa8c; --code-bg: #282624; --quote-bg: #221105;
+    --table-head: #282624; --shadow: 0 1px 3px rgba(0,0,0,.45);
+  }
+  @media (prefers-color-scheme: dark) {
+    html[data-theme="auto"] {
+      --bg: #171615; --fg: #f3f2f2; --muted: #aba5a1; --rule: #433f3c;
+      --link: #d4aa8c; --accent: #d4aa8c; --code-bg: #282624; --quote-bg: #221105;
+      --table-head: #282624; --shadow: 0 1px 3px rgba(0,0,0,.45);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--sans); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  header.bar { position: sticky; top: 0; z-index: 5; display: flex; gap: .75rem; align-items: center;
+    padding: .6rem 1rem; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(180%) blur(8px); border-bottom: 1px solid var(--rule); }
+  header.bar .crumb { font-family: var(--mono); font-size: .8rem; color: var(--muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  header.bar button { font: inherit; font-size: .85rem; cursor: pointer; color: var(--fg);
+    background: transparent; border: 1px solid var(--rule); border-radius: .5rem; padding: .3rem .6rem; }
+  header.bar button:hover { border-color: var(--accent); }
+  header.bar .brand { display: flex; align-items: center; gap: .4rem; margin-right: .5rem; flex: none; order: -1; }
+  header.bar .brand-logo { width: 22px; height: 20px; display: inline-flex; }
+  header.bar .brand-logo svg { width: 100%; height: 100%; --fill-0: var(--brand-ink); --stroke-0: var(--brand-ink); }
+  header.bar .brand-word { font-family: 'Lato', var(--sans); font-weight: 700; color: var(--brand-ink); text-transform: uppercase; font-size: 18.18px; letter-spacing: .7272px; line-height: 1; }
+  html { --brand-ink: #343230; }
+  html[data-theme="dark"] { --brand-ink: #f3f2f2; }
+  @media (prefers-color-scheme: dark) { html[data-theme="auto"] { --brand-ink: #f3f2f2; } }
+  main { max-width: var(--maxw); margin: 0 auto; padding: 2.5rem 1.25rem 6rem; }
+  .frontmatter { font-family: var(--mono); font-size: .8rem; color: var(--muted); background: var(--code-bg); border: 1px solid var(--rule); border-radius: .5rem; padding: .7rem .9rem; margin: 0 0 1.6rem; white-space: pre-wrap; overflow-x: auto; }
+  article { font-family: var(--serif); font-size: 1.075rem; }
+  article h1, article h2, article h3, article h4 { font-family: var(--sans); line-height: 1.25; font-weight: 650; }
+  article h1 { font-size: 2rem; margin: .2em 0 .6em; letter-spacing: -.01em; }
+  article h2 { font-size: 1.45rem; margin: 2em 0 .5em; padding-bottom: .25em; border-bottom: 1px solid var(--rule); }
+  article h3 { font-size: 1.18rem; margin: 1.6em 0 .4em; }
+  article a { color: var(--link); text-decoration-color: color-mix(in srgb, var(--link) 40%, transparent); text-underline-offset: 2px; }
+  article p, article li { color: var(--fg); }
+  article blockquote { margin: 1.2em 0; padding: .6em 1em; background: var(--quote-bg);
+    border-left: 3px solid var(--accent); border-radius: 0 .4rem .4rem 0; color: var(--muted); }
+  article code { font-family: var(--mono); font-size: .9em; background: var(--code-bg); padding: .12em .35em; border-radius: .3rem; }
+  article pre { background: var(--code-bg); padding: 1rem; border-radius: .6rem; overflow: auto; box-shadow: var(--shadow); }
+  article pre code { background: none; padding: 0; }
+  article table { border-collapse: collapse; width: 100%; margin: 1.3em 0; font-family: var(--sans); font-size: .95rem; }
+  article th, article td { border: 1px solid var(--rule); padding: .5em .7em; text-align: left; vertical-align: top; }
+  article thead th { background: var(--table-head); }
+  article tr:nth-child(even) td { background: color-mix(in srgb, var(--table-head) 45%, transparent); }
+  article img, article svg { max-width: 100%; height: auto; }
+  article hr { border: none; border-top: 1px solid var(--rule); margin: 2.5em 0; }
+  .dropzone { border: 2px dashed var(--rule); border-radius: 1rem; padding: 3rem; text-align: center; color: var(--muted); }
+  .dropzone.drag { border-color: var(--accent); color: var(--fg); }
+  .hint { color: var(--muted); font-family: var(--sans); font-size: .9rem; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,400;0,600;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+</head>
+<body>
+<header class="bar">
+  <span class="crumb" id="crumb"></span>
+  <button id="open">Open .md…</button>
+  <button id="theme">◐ Theme</button>
+  <span class="brand" aria-label="Quill">
+    <span class="brand-logo"><svg viewBox="0 0 34.1198 30.6333" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true"><g><path d="M21.5825 18.6715C20.5759 19.7112 19.758 22.7674 18.8771 24.2796L17.9334 23.8386L20.5759 18.0097C20.3557 8.58907 32.4356 -0.988901 33.7568 0.0822349C34.7677 0.901778 33.3793 3.83158 33.0647 4.55623L31.1458 5.84801L32.6243 5.62748C29.6673 14.0714 22.3972 17.83 21.5825 18.6715Z" fill="var(--fill-0, #343230)"/><path d="M0.636189 23.5755C1.58833 23.5755 2.85859 23.5755 3.22025 22.0948C3.88202 19.3853 4.66985 17.5265 5.01649 19.4799C5.36313 21.4332 6.34004 28.8999 6.81273 26.852C7.28542 24.8042 9.27299 13.0954 9.84022 15.7103C10.4075 18.3253 10.7203 32.1135 11.2876 29.7191C11.8548 27.3247 14.8727 16.799 15.1563 18.0907C15.44 19.3824 17.7233 25.9715 18.3302 24.1209" stroke="var(--stroke-0, #343230)" stroke-width="1.27238" stroke-linecap="round" stroke-linejoin="round"/><path d="M25.2973 11.0503C24.9898 11.6274 22.799 15.138 21.742 16.8212C22.4082 13.0827 26.6745 8.17531 28.7244 6.18895C27.7101 7.56895 25.6047 10.4732 25.2973 11.0503Z" fill="var(--fill-0, white)"/></g></svg></span>
+    <span class="brand-word">QUILL</span>
+  </span>
+</header>
+<main>
+  <article id="content">
+    <div class="dropzone" id="dropzone">
+      <p><strong>Drop a markdown file here</strong> or click “Open .md…”.</p>
+      <p class="hint">Tip: serve this folder (<code>python3 -m http.server</code>) and open
+      <code>report-viewer.html?doc=00-SUMMARY.md</code> — then relative links navigate the whole report tree.</p>
+    </div>
+  </article>
+</main>
+<input type="file" id="file" accept=".md,.markdown,text/markdown" hidden />
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script>
+  const $ = s => document.querySelector(s);
+  const content = $("#content"), crumb = $("#crumb");
+
+  // ---- theme ----
+  const html = document.documentElement;
+  const saved = localStorage.getItem("reportTheme");
+  if (saved) html.setAttribute("data-theme", saved);
+  $("#theme").onclick = () => {
+    const order = ["auto", "light", "dark"];
+    const next = order[(order.indexOf(html.getAttribute("data-theme")) + 1) % order.length];
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("reportTheme", next);
+    $("#theme").textContent = next === "auto" ? "◐ Auto" : next === "dark" ? "● Dark" : "○ Light";
+  };
+
+  // ---- markdown rendering ----
+  function baseDir(path) { const i = path.lastIndexOf("/"); return i < 0 ? "" : path.slice(0, i + 1); }
+  function resolve(base, rel) {
+    if (/^([a-z]+:)?\/\//i.test(rel) || rel.startsWith("#")) return rel;
+    const parts = (base + rel).split("/"); const out = [];
+    for (const p of parts) { if (p === "." || p === "") continue; if (p === "..") out.pop(); else out.push(p); }
+    return out.join("/");
+  }
+  function splitFrontmatter(md) {
+    if (md.slice(0, 4) === "---\n") {
+      const end = md.indexOf("\n---", 4);
+      if (end !== -1) return [md.slice(4, end).trim(), md.slice(end + 4).replace(/^\r?\n/, "")];
+    }
+    return [null, md];
+  }
+  function escapeHtml(s) { return s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+  function render(md, path) {
+    marked.setOptions({ gfm: true, breaks: true });
+    const [fm, body] = splitFrontmatter(md);
+    content.innerHTML = (fm ? '<pre class="frontmatter">' + escapeHtml(fm) + "</pre>" : "") + marked.parse(body);
+    document.title = (content.querySelector("h1")?.textContent || path || "Report");
+    crumb.textContent = path || "";
+    // rewrite relative .md links to stay in the viewer; resolve relative images
+    const dir = path ? baseDir(path) : "";
+    content.querySelectorAll("a[href]").forEach(a => {
+      const href = a.getAttribute("href");
+      if (/\.(md|markdown)(#.*)?$/i.test(href) && !/^([a-z]+:)?\/\//i.test(href)) {
+        a.setAttribute("href", "?doc=" + encodeURIComponent(resolve(dir, href)));
+      }
+    });
+    if (dir) content.querySelectorAll("img[src]").forEach(img => {
+      const src = img.getAttribute("src");
+      if (!/^([a-z]+:)?\/\//i.test(src) && !src.startsWith("data:")) img.setAttribute("src", resolve(dir, src));
+    });
+    content.querySelectorAll("pre code").forEach(b => { try { hljs.highlightElement(b); } catch (e) {} });
+    window.scrollTo(0, 0);
+  }
+
+  // ---- load by ?doc= (needs http server) with file-picker fallback ----
+  const params = new URLSearchParams(location.search);
+  const doc = params.get("doc");
+  if (doc) {
+    fetch(doc).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(t => render(t, doc))
+      .catch(e => { content.innerHTML = '<div class="dropzone"><p><strong>Couldn’t fetch <code>' + doc +
+        '</code></strong> (' + e.message + ').</p><p class="hint">Open over a local server, or drop the file in.</p></div>';
+        wireDrop(); });
+  } else { wireDrop(); }
+
+  function loadFile(file) { const r = new FileReader(); r.onload = () => render(r.result, file.name); r.readAsText(file); }
+  $("#open").onclick = () => $("#file").click();
+  $("#file").onchange = e => e.target.files[0] && loadFile(e.target.files[0]);
+  function wireDrop() {
+    const dz = $("#dropzone"); if (!dz) return;
+    ["dragover","dragenter"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add("drag"); }));
+    ["dragleave","drop"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove("drag"); }));
+    dz.addEventListener("drop", e => e.dataTransfer.files[0] && loadFile(e.dataTransfer.files[0]));
+    dz.addEventListener("click", () => $("#file").click());
+  }
+</script>
+</body>
+</html>
