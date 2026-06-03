@@ -6,7 +6,7 @@ export const meta = {
     { title: 'Reduce', detail: 'one agent per dimension consolidates across all windows', model: 'opus' },
     { title: 'Synthesize', detail: 'top-level summary + generate next-round questions', model: 'opus' },
     { title: 'Recurse', detail: 'targeted research on the top generated questions', model: 'sonnet' },
-    { title: 'Finalize', detail: 'fold round-2 answers into the summary + write question dashboard', model: 'sonnet' },
+    { title: 'Finalize', detail: 'fold round-2 answers into the summary + write question dashboard', model: 'opus' },
   ],
 }
 
@@ -16,7 +16,7 @@ const { question, dimensions, windows, participantsHint = [], outDir, recursion 
 // Model strategy: token-heavy transcript reading on the cheaper model; cross-cutting
 // judgment (consolidation/synthesis) on the more expensive one. Override any via args.models.
 const M = Object.assign(
-  { map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'sonnet' },
+  { map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'opus' },
   A.models || {},
 )
 
@@ -74,6 +74,17 @@ const QR_SCHEMA = {
     confidence: { type: 'string', enum: ['inconclusive', 'low', 'medium', 'high'] },
     evidence: { type: 'array', items: { type: 'string' } },
     path: { type: 'string' },
+  },
+}
+const GATE_SCHEMA = {
+  // The in-workflow "evaluate and decide" for recursion: a cheap gate judges whether a
+  // costly follow-up round is worth running, and which questions are decision-grade.
+  type: 'object', additionalProperties: false,
+  required: ['proceed', 'reason'],
+  properties: {
+    proceed: { type: 'boolean' },
+    reason: { type: 'string' },
+    selected: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['q', 'why', 'dimension'], properties: { q: { type: 'string' }, why: { type: 'string' }, dimension: { type: 'string' } } } },
   },
 }
 
@@ -228,13 +239,29 @@ phase('Synthesize')
 const synth = await agent(synthPrompt(reduceResults), { label: 'synthesize', phase: 'Synthesize', schema: SYNTH_SCHEMA, model: M.synthesize })
 
 let round2 = []
-if (recursion && recursion.rounds > 0 && synth && synth.nextQuestions && synth.nextQuestions.length) {
-  phase('Recurse')
-  const top = synth.nextQuestions.slice(0, recursion.topK || 4)
-  log(`Recursing on top ${top.length} generated questions…`)
-  round2 = (await parallel(top.map((nq, i) => () =>
-    agent(qrPrompt(nq, i), { label: `q:${slug(nq.q)}`, phase: 'Recurse', schema: QR_SCHEMA, model: M.recurse })
-  ))).filter(Boolean)
+const allowRecursion = !!(recursion && recursion.rounds > 0)   // on/off switch; one round max regardless
+if (allowRecursion && synth && synth.nextQuestions && synth.nextQuestions.length) {
+  // Evaluate-and-decide IN the workflow: a cheap gate decides whether a costly round is justified.
+  const gatePrompt = `You are the RECURSION GATE for an EXPENSIVE follow-up research round — it spawns one transcript-reading agent per question. Decide conservatively whether another round is justified.
+
+Open questions from the report:
+${synth.nextQuestions.map((q, i) => `${i + 1}. [${q.dimension}] ${q.q} — ${q.why}`).join('\n')}
+
+Bottom line so far:
+${synth.executiveSummary || '(none)'}
+
+Proceed ONLY if a round would MATERIALLY change or strengthen the answer with evidence available in the corpus. Do NOT proceed for nice-to-haves, for questions needing data outside the meetings, or for anything the report already answers. When in doubt, do not proceed — cost matters. If proceeding, select only the few genuinely decision-grade questions (fewer is better).`
+  const gate = await agent(gatePrompt, { label: 'recurse-gate', phase: 'Recurse', schema: GATE_SCHEMA, model: M.recurse })
+  const picks = (gate && gate.proceed && gate.selected ? gate.selected : []).slice(0, (recursion && recursion.topK) || 4)
+  if (picks.length) {
+    phase('Recurse')
+    log(`Gate: one follow-up round on ${picks.length} question(s) — ${gate.reason}`)
+    round2 = (await parallel(picks.map((nq, i) => () =>
+      agent(qrPrompt(nq, i), { label: `q:${slug(nq.q)}`, phase: 'Recurse', schema: QR_SCHEMA, model: M.recurse })
+    ))).filter(Boolean)
+  } else {
+    log(`Gate: skipping the follow-up round — ${gate ? gate.reason : 'nothing decision-grade'}`)
+  }
 }
 
 phase('Finalize')
