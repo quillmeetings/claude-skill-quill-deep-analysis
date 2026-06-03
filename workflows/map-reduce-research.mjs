@@ -271,7 +271,7 @@ return {
   outDir,
   summaryPath: synth && synth.summaryPath,
   windows: mapResults.map(m => ({ window: m.window, meetings: m.meetingsReviewed.length, reportPath: m.reportPath })),
-  dimensions: reduceResults.map(r => ({ dimension: r.dimension, strength: r.strength_1to5, confidence: r.confidence, reportPath: r.reportPath })),
+  dimensions: reduceResults.map(r => ({ dimension: r.dimension, confidence: r.confidence, reportPath: r.reportPath })),
   nextQuestions: (synth && synth.nextQuestions) || [],
   round2: round2.map(r => ({ q: r.question, confidence: r.confidence, path: r.path })),
 }
