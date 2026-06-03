@@ -27,11 +27,11 @@ The artifact mirrors the computation, so you can drill `00-SUMMARY → <dimensio
 ## Install
 
 ```
-/plugin marketplace add quillmeetings/quill-deep-analysis
-/plugin install quill-deep-analysis@quill
+/plugin marketplace add quillmeetings/claude-plugins
+/plugin install quill-deep-analysis@quillmeetings
 ```
 
-(One repo, both roles: it ships its own `marketplace.json`.) Or install manually by copying `skills/map-reduce-research/` into `~/.claude/skills/` and `workflows/map-reduce-research.mjs` into your project's `.claude/workflows/`.
+(Installs from the Quill Meetings marketplace — one `add`, then any Quill skill.) Or install manually by copying `skills/map-reduce-research/` into `~/.claude/skills/` and `workflows/map-reduce-research.mjs` into your project's `.claude/workflows/`.
 
 Validate locally before publishing:
 ```
