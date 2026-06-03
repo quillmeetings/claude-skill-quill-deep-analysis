@@ -1,19 +1,37 @@
 ---
-name: map-reduce-research
-description: Produce a thorough, well-cited written report by researching across many past meetings/conversations over a long time span and consolidating them into one coherent, defensible answer, saved as a drill-down folder tree. Use when someone asks to research, write up, generate/produce a report, synthesize, or give an overview of something that spans weeks or months and many meetings, or that needs multiple facets/perspectives pulled together — e.g. "pull together a tight, defensible explanation of each of our pillars from our past conversations", "give me an overview of the last year of Jerry's work and growth/weaknesses for a balanced performance review", "summarize everything we've decided about pricing over the last quarter". Do NOT use for a single-meeting recap or a single-fact lookup ("what did we decide yesterday?", "when is the Acme call?") — query meetings directly for those. The only required input is the question; the skill plans the decomposition itself.
+name: meeting-transcript-research
+description: >-
+  Research a question across MANY of your own past meetings / transcripts (the Quill
+  corpus) over a long time span, and consolidate the evidence into one cited, defensible
+  report saved as a drill-down folder tree. This is the skill for researching YOUR OWN
+  meetings — distinct from the built-in `deep-research`, which researches the web; when
+  the source is your meetings/transcripts/conversations, use THIS one. USE IT when the ask
+  spans weeks or months and many meetings, or weighs multiple facets/perspectives into one
+  write-up — including casual and hypothesis-testing phrasings: "research / look into / dig
+  into X across our meetings", "do some research on …", "use Quill to look into …", "find
+  evidence (for or against) that …", "look for evidence that customers care about X", "how
+  did our thinking on X evolve", "write up / synthesize / give me an overview of the last
+  quarter of …", "a balanced picture of someone's last year for a performance review",
+  "pull together a defensible explanation of each of our pillars from past conversations".
+  Do NOT use for a single-meeting recap or a single-fact lookup ("what did we decide
+  yesterday?", "when is the Acme call?") — query meetings directly for those. The only
+  required input is the question; the skill plans the decomposition itself.
 ---
 
-# Map/reduce research (Quill corpus)
+# Meeting-transcript research (Quill corpus)
 
-A pattern for deep research over your own meetings. Distinct from the built-in web `deep-research` skill: the **source is the Quill transcript corpus**, the **map dimension is time**, and the **output is a folder tree** you can drill into.
+Deep research over your own meetings. The **source is the Quill transcript corpus**, the **map dimension is time**, and the **output is a folder tree** you can drill into. (The engine underneath is a map/reduce — that's the *mechanism*, not the trigger; reach for this on intent, see below.) Distinct from the built-in web `deep-research` skill: that one reads the web, this one reads *your meetings*.
 
 ## When to use this (the decision — encoded, not by keyword)
 
-Reach for this when the answer must be **assembled from many conversations across a long span**, or must weigh **multiple facets/perspectives** into one defensible write-up. Don't key off mechanism words like "map/reduce" — key off what the person actually wants: a *researched report* vs. a *quick lookup*.
+Reach for this when the answer must be **assembled from many of your own conversations across a long span**, or must weigh **multiple facets/perspectives** into one defensible write-up. Don't key off the mechanism ("map/reduce") — key off what the person wants (a *researched report over your meetings* vs. a *quick lookup*) and the *source* (their own meetings/transcripts, not the web).
 
 USE IT when the ask sounds like:
 - "research / write up / generate a report on / synthesize / give me an overview of …"
+- casual register: "do some research on …", "look into …", "dig into …", "use Quill to research/look into …"
+- hypothesis-testing / evidence-gathering: "find evidence (for or against) that …", "look for evidence that customers care about X", "does the record support …"
 - "… the last [quarter/year] of X", "how our thinking on X evolved", "a balanced picture of X"
+- any of the above where the **source is your own meetings/transcripts/conversations** (not the web — that's `deep-research`)
 
 The only input is the **question**; the skill decides the decomposition (what the dimensions are, how to shard time). Same skill, different asks:
 - "A tight, defensible explanation of each of our three pillars from our historical conversations." → dimensions = the pillars.

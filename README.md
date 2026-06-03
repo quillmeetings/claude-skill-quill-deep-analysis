@@ -31,7 +31,7 @@ The artifact mirrors the computation, so you can drill `00-SUMMARY → <dimensio
 /plugin install quill-deep-analysis@quillmeetings
 ```
 
-(Installs from the Quill Meetings marketplace — one `add`, then any Quill skill.) Or install manually by copying `skills/map-reduce-research/` into `~/.claude/skills/` and `workflows/map-reduce-research.mjs` into your project's `.claude/workflows/`.
+(Installs from the Quill Meetings marketplace — one `add`, then any Quill skill.) Or install manually by copying `skills/meeting-transcript-research/` into `~/.claude/skills/` and `workflows/map-reduce-research.mjs` into your project's `.claude/workflows/`.
 
 Validate locally before publishing:
 ```
@@ -66,7 +66,7 @@ Under the hood it runs `workflows/map-reduce-research.mjs` via the Workflow tool
 | `recursion` | `{ rounds: 1, topK: 4 }`, or `{ rounds: 0 }` to stop after synthesis |
 | `models` *(optional)* | per-agent overrides; default `{ map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'sonnet' }` |
 
-See `skills/map-reduce-research/SKILL.md` for the full methodology, Quill query mechanics, and the report-register rules.
+See `skills/meeting-transcript-research/SKILL.md` for the full methodology, Quill query mechanics, and the report-register rules.
 
 ## License
 
