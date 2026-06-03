@@ -59,7 +59,7 @@ Agents load tools first: `ToolSearch("select:mcp__quill__search_meetings,mcp__qu
 
 ## Model strategy (cost)
 
-The map and recurse agents read full transcripts — high token volume, but the task is *extraction*, which a cheaper model does well. The reduce and synthesize agents do the cross-cutting *judgment* (weighing evidence, narrating how the view evolved, writing the report), which is worth the more expensive model. Defaults:
+The map and recurse agents read full transcripts — high token volume, but the task is *extraction*, which a cheaper model does well. The reduce, synthesize, and finalize agents do the cross-cutting *judgment* and *final assembly* (weighing evidence, narrating how the view evolved, writing the report, and folding in the follow-up answers), which is worth the more expensive model. Defaults:
 
 | Agent | Task | Model |
 |---|---|---|
@@ -67,7 +67,7 @@ The map and recurse agents read full transcripts — high token volume, but the 
 | Recurse | targeted follow-up research (also reads transcripts) | `sonnet` |
 | Reduce | consolidate one dimension across all windows | `opus` |
 | Synthesize | top-level report + generate questions | `opus` |
-| Finalize | mechanical stitching of links/dashboard | `sonnet` |
+| Finalize | assemble the final report — fold round-2 answers into `00-SUMMARY.md`, write the questions dashboard | `opus` |
 
 Override per run with `args.models`, e.g. `models: { map: 'haiku' }` for a cheap dry run, or `{ reduce: 'sonnet' }` to economize further. The transcript-reading agents dominate token spend, so keeping them off the most expensive model is the main lever.
 
@@ -77,22 +77,20 @@ The engine's agent prompts already encode this; it's restated here for anyone ex
 
 ## How to run it
 
-The engine ships with this plugin at `workflows/map-reduce-research.mjs`. **Always run the map/reduce through this engine via the Workflow tool — never perform the map/reduce yourself in the main thread.** Running the engine is what applies the model tiering (Opus on the reduce + synthesize steps — the biggest quality lever); doing it inline silently runs everything on the session model.
+The engine ships with this plugin at `workflows/map-reduce-research.mjs`. Run the map/reduce through it via the Workflow tool rather than doing the map/reduce yourself in the main thread (the engine applies the per-stage model tiering).
 
 Steps:
-1. **Locate the engine.** Use `${CLAUDE_PLUGIN_ROOT}/workflows/map-reduce-research.mjs`. If that variable isn't resolved in your context, find the installed copy (e.g. `ls ~/.claude/plugins/**/workflows/map-reduce-research.mjs`) or copy that file into the project's `.claude/workflows/`. Pass the resolved absolute path below.
+1. **Locate the engine.** Use `${CLAUDE_PLUGIN_ROOT}/workflows/map-reduce-research.mjs`. If that variable isn't resolved in your context, find the installed copy (e.g. `ls ~/.claude/plugins/**/workflows/map-reduce-research.mjs`) or copy it into the project's `.claude/workflows/`. Pass the resolved absolute path below.
 2. Pre-compute windows + paths, `mkdir -p` the output tree, and copy this skill's `assets/report-viewer.html` into `outDir`.
 3. Run the engine:
 
 ```
 Workflow({ scriptPath: "<absolute path to map-reduce-research.mjs>", args: {
-  question, dimensions, windows, participantsHint, outDir,
-  recursion: { rounds, topK },
-  models: { map: "sonnet", reduce: "opus", synthesize: "opus", recurse: "sonnet", finalize: "sonnet" }
+  question, dimensions, windows, participantsHint, outDir, recursion: { rounds, topK }
 }})
 ```
 
-Synthesis and reduce run on **Opus** — that is deliberate and the main quality lever. Pass the `models` block as shown and do not downgrade them. If you cannot run the engine, stop and say so rather than doing the map/reduce on the session model.
+The engine sets the per-stage models itself (see **Model strategy**); you don't need to pass `models` unless overriding.
 
 `args` shape:
 - `question` — the top-level question (string).
@@ -100,8 +98,12 @@ Synthesis and reduce run on **Opus** — that is deliberate and the main quality
 - `windows` — `[{ start, end, label }]` ISO date-times, pre-sharded.
 - `participantsHint` — names usually present (e.g. `["Jordan"]`); given as context, not a hard filter.
 - `outDir` — the run folder. **Default: use `./research/<topic>-<date>/`, creating `./research/` in the project if it doesn't exist yet** — unless the user has specified another location, in which case use that.
-- `recursion` — `{ rounds: 1, topK: 4 }` to do one follow-up round on the top 4 generated questions; `{ rounds: 0 }` to stop after synthesis.
-- `models` *(optional)* — per-agent model overrides; defaults to `{ map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'sonnet' }`. See **Model strategy** above.
+- `recursion` — **choose by the question's complexity:**
+  - Simple/narrow question → `{ rounds: 0 }` (stop after synthesis; no follow-up pass).
+  - Substantial/multi-faceted question → `{ rounds: 1, topK: 4 }` (one targeted round on the sharpest generated questions).
+  - Very broad/open-ended research → raise `rounds` (each round re-researches the still-open questions).
+  When unsure, default to `{ rounds: 1, topK: 4 }`.
+- `models` *(optional)* — per-agent model overrides; defaults to `{ map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'opus' }`. See **Model strategy** above.
 
 After it returns:
 

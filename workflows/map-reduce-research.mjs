@@ -6,7 +6,7 @@ export const meta = {
     { title: 'Reduce', detail: 'one agent per dimension consolidates across all windows', model: 'opus' },
     { title: 'Synthesize', detail: 'top-level summary + generate next-round questions', model: 'opus' },
     { title: 'Recurse', detail: 'targeted research on the top generated questions', model: 'sonnet' },
-    { title: 'Finalize', detail: 'fold round-2 answers into the summary + write question dashboard', model: 'sonnet' },
+    { title: 'Finalize', detail: 'fold round-2 answers into the summary + write question dashboard', model: 'opus' },
   ],
 }
 
@@ -16,7 +16,7 @@ const { question, dimensions, windows, participantsHint = [], outDir, recursion 
 // Model strategy: token-heavy transcript reading on the cheaper model; cross-cutting
 // judgment (consolidation/synthesis) on the more expensive one. Override any via args.models.
 const M = Object.assign(
-  { map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'sonnet' },
+  { map: 'sonnet', reduce: 'opus', synthesize: 'opus', recurse: 'sonnet', finalize: 'opus' },
   A.models || {},
 )
 
